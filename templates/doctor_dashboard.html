@@ -1,0 +1,301 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Dashboard - Organ Matching System{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h2>Welcome, Dr. {{ name }}</h2>
+        <p>Organ Transplant Compatibility Assessment System</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-button active" onclick="switchTab('input')">
+            <span>➕</span> New Match Assessment
+        </button>
+        <button class="tab-button" onclick="switchTab('history')">
+            <span>📊</span> Match History
+        </button>
+    </div>
+
+    <!-- Input Tab -->
+    <div id="input" class="tab-content active">
+        <div class="form-container" style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+            <div class="form-section">
+                <h3 style="color: var(--primary-color); margin-bottom: 1.5rem;">Donor Information</h3>
+                <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                    <div class="form-group">
+                        <label for="donor_name">Donor Name *</label>
+                        <input type="text" id="donor_name" placeholder="Enter donor name">
+                    </div>
+                    <div class="form-group">
+                        <label for="donor_age">Age *</label>
+                        <input type="number" id="donor_age" placeholder="Age" min="0" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="donor_blood">Blood Group *</label>
+                        <select id="donor_blood">
+                            <option value="">Select Blood Group</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="donor_hla">HLA Type *</label>
+                        <input type="text" id="donor_hla" placeholder="e.g., A2,B44,DR7">
+                    </div>
+                    <div class="form-group">
+                        <label for="donor_tissue">Tissue Type *</label>
+                        <select id="donor_tissue">
+                            <option value="">Select Tissue Type</option>
+                            <option value="Type1">Type 1</option>
+                            <option value="Type2">Type 2</option>
+                            <option value="Type3">Type 3</option>
+                            <option value="Type4">Type 4</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="donor_height">Height (cm)</label>
+                        <input type="number" id="donor_height" placeholder="Height in cm" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="donor_weight">Weight (kg)</label>
+                        <input type="number" id="donor_weight" placeholder="Weight in kg" min="0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section" style="margin-top: 2rem;">
+                <h3 style="color: var(--primary-color); margin-bottom: 1.5rem;">Patient Information</h3>
+                <div class="form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem;">
+                    <div class="form-group">
+                        <label for="patient_name">Patient Name *</label>
+                        <input type="text" id="patient_name" placeholder="Enter patient name">
+                    </div>
+                    <div class="form-group">
+                        <label for="patient_age">Age *</label>
+                        <input type="number" id="patient_age" placeholder="Age" min="0" max="100">
+                    </div>
+                    <div class="form-group">
+                        <label for="patient_blood">Blood Group *</label>
+                        <select id="patient_blood">
+                            <option value="">Select Blood Group</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="patient_hla">HLA Type *</label>
+                        <input type="text" id="patient_hla" placeholder="e.g., A2,B44,DR7">
+                    </div>
+                    <div class="form-group">
+                        <label for="patient_tissue">Tissue Type *</label>
+                        <select id="patient_tissue">
+                            <option value="">Select Tissue Type</option>
+                            <option value="Type1">Type 1</option>
+                            <option value="Type2">Type 2</option>
+                            <option value="Type3">Type 3</option>
+                            <option value="Type4">Type 4</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="patient_height">Height (cm)</label>
+                        <input type="number" id="patient_height" placeholder="Height in cm" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="patient_weight">Weight (kg)</label>
+                        <input type="number" id="patient_weight" placeholder="Weight in kg" min="0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions" style="display: flex; gap: 1rem; margin-top: 2rem; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="calculateMatch()">
+                    <span>🔍</span> Calculate Match Percentage
+                </button>
+                <button class="btn btn-secondary" onclick="resetForm()">
+                    <span>🔄</span> Reset Form
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" style="display: none;">
+            <div class="result-card" style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div class="result-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 2px solid var(--border-color); padding-bottom: 1rem;">
+                    <h3 style="color: var(--primary-color); margin: 0;">Match Assessment Results</h3>
+                    <span id="result_timestamp" style="color: var(--text-secondary); font-size: 0.9rem;"></span>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 2rem; margin: 2rem 0;">
+                    <div id="percentage_circle" style="width: 150px; height: 150px; border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 2.5rem; font-weight: bold; color: white; background: linear-gradient(135deg, #00C853 0%, #00AA47 100%); box-shadow: 0 8px 20px rgba(0, 200, 83, 0.4); flex-shrink: 0;">
+                        <span id="percentage_value">0</span>%
+                    </div>
+                    <div class="match-status" style="flex: 1;">
+                        <h4 id="match_title" style="font-size: 1.5rem; margin-bottom: 0.5rem;">Calculating...</h4>
+                        <p id="match_description" style="color: var(--text-secondary);">Processing match data...</p>
+                    </div>
+                </div>
+
+                <div class="match-details" style="background: var(--gray-100); padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0;">
+                    <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
+                        <span style="font-weight: 600;">Blood Type Match:</span>
+                        <span style="color: var(--primary-color); font-weight: 600;" id="blood_match">-</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid var(--border-color);">
+                        <span style="font-weight: 600;">HLA Compatibility:</span>
+                        <span style="color: var(--primary-color); font-weight: 600;" id="hla_match">-</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 0.75rem 0;">
+                        <span style="font-weight: 600;">Suitability:</span>
+                        <span style="color: var(--primary-color); font-weight: 600;" id="suitability">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Tab -->
+    <div id="history" class="tab-content">
+        <div class="history-container" style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h3 style="color: var(--primary-color); margin-bottom: 1.5rem;">Match History</h3>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Timestamp</th>
+                            <th>Donor Name</th>
+                            <th>Patient Name</th>
+                            <th>Match %</th>
+                            <th>Suitable</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history_table">
+                        {% for match in matches %}
+                        <tr>
+                            <td>{{ match.id }}</td>
+                            <td>{{ match.timestamp }}</td>
+                            <td>{{ match.donor_name }}</td>
+                            <td>{{ match.patient_name }}</td>
+                            <td><strong>{{ match.match_percentage }}%</strong></td>
+                            <td>
+                                {% if match.suitable %}
+                                    <span class="badge badge-success">Yes</span>
+                                {% else %}
+                                    <span class="badge badge-danger">No</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function switchTab(tabName) {
+    const tabs = document.querySelectorAll('.tab-content');
+    const buttons = document.querySelectorAll('.tab-button');
+
+    tabs.forEach(tab => tab.classList.remove('active'));
+    buttons.forEach(btn => btn.classList.remove('active'));
+
+    document.getElementById(tabName).classList.add('active');
+    event.target.classList.add('active');
+}
+
+function validateForm() {
+    const required = ['donor_name', 'donor_age', 'donor_blood', 'donor_hla', 'donor_tissue',
+                      'patient_name', 'patient_age', 'patient_blood', 'patient_hla', 'patient_tissue'];
+
+    for (let field of required) {
+        const value = document.getElementById(field).value;
+        if (!value) {
+            alert(`Please fill in ${field.replace('_', ' ')}`);
+            return false;
+        }
+    }
+    return true;
+}
+
+function calculateMatch() {
+    if (!validateForm()) return;
+
+    const data = {
+        donor_name: document.getElementById('donor_name').value,
+        donor_age: document.getElementById('donor_age').value,
+        donor_blood: document.getElementById('donor_blood').value,
+        donor_hla: document.getElementById('donor_hla').value,
+        donor_tissue: document.getElementById('donor_tissue').value,
+        donor_height: document.getElementById('donor_height').value,
+        donor_weight: document.getElementById('donor_weight').value,
+        patient_name: document.getElementById('patient_name').value,
+        patient_age: document.getElementById('patient_age').value,
+        patient_blood: document.getElementById('patient_blood').value,
+        patient_hla: document.getElementById('patient_hla').value,
+        patient_tissue: document.getElementById('patient_tissue').value,
+        patient_height: document.getElementById('patient_height').value,
+        patient_weight: document.getElementById('patient_weight').value
+    };
+
+    fetch('/calculate-match', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        const percentage = result.data.percentage;
+        document.getElementById('percentage_value').textContent = percentage.toFixed(1);
+        document.getElementById('result_timestamp').textContent = new Date().toLocaleString();
+
+        const circle = document.getElementById('percentage_circle');
+        if (percentage >= 80) {
+            circle.style.background = 'linear-gradient(135deg, #00C853 0%, #00AA47 100%)';
+            document.getElementById('match_title').textContent = '✅ Excellent Match';
+            document.getElementById('match_description').textContent = 'Highly suitable for transplantation';
+        } else if (percentage >= 60) {
+            circle.style.background = 'linear-gradient(135deg, #4CAF50 0%, #388E3C 100%)';
+            document.getElementById('match_title').textContent = '✓ Good Match';
+            document.getElementById('match_description').textContent = 'Suitable for transplantation';
+        } else if (percentage >= 40) {
+            circle.style.background = 'linear-gradient(135deg, #FF9800 0%, #F57C00 100%)';
+            document.getElementById('match_title').textContent = '⚠ Fair Match';
+            document.getElementById('match_description').textContent = 'Moderate compatibility, requires review';
+        } else {
+            circle.style.background = 'linear-gradient(135deg, #F44336 0%, #D32F2F 100%)';
+            document.getElementById('match_title').textContent = '❌ Poor Match';
+            document.getElementById('match_description').textContent = 'Not recommended for transplantation';
+        }
+
+        document.getElementById('blood_match').textContent = result.data.blood_match;
+        document.getElementById('hla_match').textContent = result.data.hla_match.toFixed(1) + '%';
+        document.getElementById('suitability').textContent = result.data.suitable ? '✓ Suitable' : '✗ Not Suitable';
+
+        document.getElementById('results').style.display = 'block';
+        window.scrollTo({ top: document.getElementById('results').offsetTop - 100, behavior: 'smooth' });
+    })
+    .catch(error => alert('Error calculating match: ' + error));
+}
+
+function resetForm() {
+    document.querySelectorAll('input[type="text"], input[type="number"], select').forEach(el => el.value = '');
+    document.getElementById('results').style.display = 'none';
+}
+</script>
+{% endblock %}

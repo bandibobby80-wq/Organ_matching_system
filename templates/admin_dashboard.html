@@ -1,0 +1,409 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Organ Matching System{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h2>Admin Control Panel</h2>
+        <p>System Administration & User Management</p>
+    </div>
+
+    <div class="admin-stats">
+        <div class="stat-card">
+            <div class="stat-icon">👨‍⚕️</div>
+            <div class="stat-content">
+                <h4>Total Doctors</h4>
+                <p class="stat-value">{{ total_doctors }}</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon">📊</div>
+            <div class="stat-content">
+                <h4>Total Matches</h4>
+                <p class="stat-value">{{ total_matches }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-button active" onclick="switchTab('users')">
+            <span>👥</span> User Management
+        </button>
+        <button class="tab-button" onclick="switchTab('reports')">
+            <span>📋</span> Match Reports
+        </button>
+    </div>
+
+    <!-- Users Management Tab -->
+    <div id="users" class="tab-content active">
+        <div class="users-container">
+            <div class="section-header">
+                <h3>Manage Users</h3>
+                <button class="btn btn-primary" onclick="openAddUserModal()">
+                    <span>➕</span> Add New User
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Created Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users_table">
+                        {% for username, user in doctors.items() %}
+                        <tr>
+                            <td>{{ username }}</td>
+                            <td>{{ user.name }}</td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                {% if user.role == 'admin' %}
+                                    <span class="badge badge-warning">👨‍💼 Admin</span>
+                                {% else %}
+                                    <span class="badge badge-info">👨‍⚕️ Doctor</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.created_at }}</td>
+                            <td class="action-buttons">
+                                <button class="btn btn-sm btn-info" onclick="openEditUserModal('{{ username }}', '{{ user.name }}', '{{ user.email }}', '{{ user.role }}')">Edit</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteUser('{{ username }}')">Delete</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reports Tab -->
+    <div id="reports" class="tab-content">
+        <div class="reports-container">
+            <div class="section-header">
+                <h3>Match History & Reports</h3>
+            </div>
+
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Doctor</th>
+                            <th>Donor Name</th>
+                            <th>Patient Name</th>
+                            <th>Match %</th>
+                            <th>Suitable</th>
+                            <th>Timestamp</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reports_table">
+                        {% for match in matches %}
+                        <tr>
+                            <td>{{ match.id }}</td>
+                            <td>{{ match.doctor }}</td>
+                            <td>{{ match.donor_name }}</td>
+                            <td>{{ match.patient_name }}</td>
+                            <td><strong>{{ match.match_percentage }}%</strong></td>
+                            <td>
+                                {% if match.suitable %}
+                                    <span class="badge badge-success">Yes</span>
+                                {% else %}
+                                    <span class="badge badge-danger">No</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ match.timestamp }}</td>
+                            <td class="action-buttons">
+                                <button class="btn btn-sm btn-info" onclick="openEditMatchModal({{ match.id }}, '{{ match.donor_name }}', '{{ match.patient_name }}', {{ match.suitable|lower }})">Edit</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteMatch({{ match.id }})">Delete</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div id="addUserModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add New User</h3>
+            <button class="modal-close" onclick="closeModal('addUserModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="new_username">Username</label>
+                <input type="text" id="new_username" placeholder="Enter username">
+            </div>
+            <div class="form-group">
+                <label for="new_name">Full Name</label>
+                <input type="text" id="new_name" placeholder="Enter full name">
+            </div>
+            <div class="form-group">
+                <label for="new_email">Email</label>
+                <input type="email" id="new_email" placeholder="Enter email">
+            </div>
+            <div class="form-group">
+                <label for="new_role">Role</label>
+                <select id="new_role">
+                    <option value="doctor">👨‍⚕️ Doctor</option>
+                    <option value="admin">👨‍💼 Admin</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="new_password">Password</label>
+                <input type="password" id="new_password" placeholder="Enter password" value="password123">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('addUserModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="saveNewUser()">Add User</button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit User Modal -->
+<div id="editUserModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Edit User</h3>
+            <button class="modal-close" onclick="closeModal('editUserModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="edit_username">
+            <div class="form-group">
+                <label for="edit_name">Full Name</label>
+                <input type="text" id="edit_name" placeholder="Enter full name">
+            </div>
+            <div class="form-group">
+                <label for="edit_email">Email</label>
+                <input type="email" id="edit_email" placeholder="Enter email">
+            </div>
+            <div class="form-group">
+                <label for="edit_role">Role</label>
+                <select id="edit_role">
+                    <option value="doctor">👨‍⚕️ Doctor</option>
+                    <option value="admin">👨‍💼 Admin</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('editUserModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="saveEditUser()">Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Match Modal -->
+<div id="editMatchModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Edit Match Record</h3>
+            <button class="modal-close" onclick="closeModal('editMatchModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="edit_match_id">
+            <div class="form-group">
+                <label for="edit_match_donor">Donor Name</label>
+                <input type="text" id="edit_match_donor" placeholder="Enter donor name">
+            </div>
+            <div class="form-group">
+                <label for="edit_match_patient">Patient Name</label>
+                <input type="text" id="edit_match_patient" placeholder="Enter patient name">
+            </div>
+            <div class="form-group">
+                <label for="edit_match_suitable">Suitable for Transplant</label>
+                <select id="edit_match_suitable">
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('editMatchModal')">Cancel</button>
+            <button class="btn btn-primary" onclick="saveEditMatch()">Save Changes</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function switchTab(tabName) {
+    const tabs = document.querySelectorAll('.tab-content');
+    const buttons = document.querySelectorAll('.tab-button');
+
+    tabs.forEach(tab => tab.classList.remove('active'));
+    buttons.forEach(btn => btn.classList.remove('active'));
+
+    document.getElementById(tabName).classList.add('active');
+    event.target.classList.add('active');
+}
+
+function openModal(modalId) {
+    document.getElementById(modalId).style.display = 'block';
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+}
+
+function openAddUserModal() {
+    document.getElementById('new_username').value = '';
+    document.getElementById('new_name').value = '';
+    document.getElementById('new_email').value = '';
+    document.getElementById('new_role').value = 'doctor';
+    document.getElementById('new_password').value = 'password123';
+    openModal('addUserModal');
+}
+
+function openEditUserModal(username, name, email, role) {
+    document.getElementById('edit_username').value = username;
+    document.getElementById('edit_name').value = name;
+    document.getElementById('edit_email').value = email;
+    document.getElementById('edit_role').value = role;
+    openModal('editUserModal');
+}
+
+function openEditMatchModal(matchId, donor, patient, suitable) {
+    document.getElementById('edit_match_id').value = matchId;
+    document.getElementById('edit_match_donor').value = donor;
+    document.getElementById('edit_match_patient').value = patient;
+    document.getElementById('edit_match_suitable').value = suitable;
+    openModal('editMatchModal');
+}
+
+function saveNewUser() {
+    const username = document.getElementById('new_username').value;
+    const name = document.getElementById('new_name').value;
+    const email = document.getElementById('new_email').value;
+    const role = document.getElementById('new_role').value;
+    const password = document.getElementById('new_password').value;
+
+    if (!username || !name || !email) {
+        alert('Please fill in all fields');
+        return;
+    }
+
+    fetch('/api/users/add', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, name, email, role, password })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('User added successfully');
+            closeModal('addUserModal');
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+
+function saveEditUser() {
+    const username = document.getElementById('edit_username').value;
+    const name = document.getElementById('edit_name').value;
+    const email = document.getElementById('edit_email').value;
+    const role = document.getElementById('edit_role').value;
+
+    fetch('/api/users/update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ username, name, email, role })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('User updated successfully');
+            closeModal('editUserModal');
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+
+function deleteUser(username) {
+    if (confirm('Are you sure you want to delete this user?')) {
+        fetch('/api/users/delete/' + username, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('User deleted successfully');
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+    }
+}
+
+function saveEditMatch() {
+    const matchId = document.getElementById('edit_match_id').value;
+    const donor = document.getElementById('edit_match_donor').value;
+    const patient = document.getElementById('edit_match_patient').value;
+    const suitable = document.getElementById('edit_match_suitable').value === 'true';
+
+    fetch('/api/matches/update/' + matchId, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ donor_name: donor, patient_name: patient, suitable })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Match updated successfully');
+            closeModal('editMatchModal');
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    });
+}
+
+function deleteMatch(matchId) {
+    if (confirm('Are you sure you want to delete this match record?')) {
+        fetch('/api/matches/delete/' + matchId, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Match deleted successfully');
+                location.reload();
+            } else {
+                alert('Error: ' + data.error);
+            }
+        });
+    }
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    });
+}
+</script>
+{% endblock %}

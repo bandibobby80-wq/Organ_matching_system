@@ -1,0 +1,72 @@
+# UPDATE GUIDE: Version 2 (With Role Selection)
+
+## What's New
+
+### Role Selection During Registration
+- Users now choose their role (Doctor or Admin) when registering
+- Automatic dashboard redirection based on role
+- Admin can now add and manage both doctor and admin users
+
+## Installation
+
+1. Extract: `unzip organ_matching_system_v2.zip`
+2. Install: `pip install -r requirements.txt`
+3. Run: `python app.py`
+4. Open: `http://localhost:5000`
+
+## Testing the New Feature
+
+### Test 1: Admin Login (Existing)
+- Username: admin
+- Password: admin123
+- Expected: Admin Dashboard
+
+### Test 2: Register as Doctor
+1. Click "Register here"
+2. Fill in details
+3. Select "Doctor" role
+4. Login with your credentials
+5. Expected: Doctor Dashboard
+
+### Test 3: Register as Admin
+1. Click "Register here"
+2. Fill in details
+3. Select "Admin" role
+4. Login with your credentials
+5. Expected: Admin Dashboard
+
+## Key Changes
+
+### Files Modified
+- register.html: Added role dropdown
+- app.py: Added role validation & routing
+- admin_dashboard.html: Enhanced role management
+- style.css: New role styling
+
+### Files Added
+None (all files updated, not new)
+
+### Backward Compatibility
+- All existing admin login still works
+- Previously registered doctors continue to work
+- No data migration needed
+
+## New Capabilities
+
+### Admin Dashboard
+- Add new doctors
+- Add new admins
+- Edit any user (including admins)
+- Delete users (with restrictions)
+- Role-based access visible
+
+### Doctor Dashboard
+- Same as before
+- No changes required
+
+## Support
+
+For detailed documentation, see:
+- README.md (main guide)
+- SETUP_GUIDE.txt (quick start)
+- DETAILED_DOCUMENTATION.md (comprehensive guide)

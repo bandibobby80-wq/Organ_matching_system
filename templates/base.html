@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Organ Matching System{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% if session.user %}
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">
+                <h1>🏥 Organ Matching System</h1>
+            </div>
+            <div class="navbar-menu">
+                <span class="user-info">
+                    <i class="icon">👤</i>
+                    {{ session.name }} <small>
+                    {% if session.role == 'admin' %}
+                        (👨‍💼 ADMIN)
+                    {% else %}
+                        (👨‍⚕️ DOCTOR)
+                    {% endif %}
+                    </small>
+                </span>
+                <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
